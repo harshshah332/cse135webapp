@@ -61,8 +61,8 @@
 				session.setAttribute( "state", state );
 				session.setAttribute( "age", age );
 				session.setAttribute( "loginSuceed", 1); 
-				response.sendRedirect("productOrder.jsp"); //for testing purposes
-				//	response.sendRedirect("home.jsp") //this is the actual line
+				//response.sendRedirect("productOrder.jsp"); //for testing purposes
+				response.sendRedirect("home.jsp"); //this is the actual line
 						
 				// Close the connections and statements
 				rs.close();
@@ -73,7 +73,7 @@
 
 			}
 			else {
-			//	out.println("No user found with that name. Please retry. ");
+			//	no user with that username
 				session.setAttribute( "loginSuceed", 2 );
 				loginSuceed = 2; 
 				//response.sendRedirect("login.jsp"); 
@@ -87,6 +87,7 @@
 		 
 	}
 	else {
+		//error has occured with inputtin username
 		session.setAttribute( "loginSuceed", 0 );
 		loginSuceed = 0;
 		

@@ -7,7 +7,7 @@
 </head>
 <body>
 <%@ page language="java" import="java.sql.*"%>
-<%@ page language="java" imort="java.util.*"%>
+<%@ page language="java" import="java.util.*"%>
 
 <%
 	if(session.getAttribute("name")!=null || session.getAttribute("name") == null) {
@@ -15,7 +15,7 @@
 
 <div style="width:80%; position:absolute; top:0%;  ">
 
-		<h3>Hi, <% (String)session.getAttribute( "name") %>! View Your Shopping Cart</h3>
+		<h3>Hi, <%=session.getAttribute( "name") %>! View Your Shopping Cart</h3>
 
 		
 		

@@ -19,7 +19,7 @@ if(name!=null ) {
 	
 	<div style="width:79%; position:absolute; top:0%; right:10%; height:10%;">
 	
-			<h3>Hi, <% (String)session.getAttribute( "name") %>! Here is your Purchase Confirmation</h3>
+			<h3>Hi, <%=session.getAttribute( "name") %>! Here is your Purchase Confirmation</h3>
 	</div>
 	
 	
