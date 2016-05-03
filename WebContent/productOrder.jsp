@@ -18,7 +18,7 @@
 
 <div style="width:80%; position:center; ">
 
-		<h3>Hi, <% (String)session.getAttribute( "name") %>Your Current Shopping Cart</h3>
+		<h3>Hi, <%= session.getAttribute( "name") %>Your Current Shopping Cart</h3>
 
 
 
