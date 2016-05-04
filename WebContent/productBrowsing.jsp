@@ -80,7 +80,7 @@ try
 rs=stmt.executeQuery(SQL);
 // ALL PRODUCTS?
 while(rs.next()) {
-  %><a href="productBrowsing.jsp?cid="+<%=rs.getInt(1)%> target=\"_self\"><%=rs.getString(2)%></a><br><%
+  %><a href="productBrowsing.jsp?cid=<%=rs.getInt("id")%>"><%=rs.getString("name")%></a><br><%
 }%>
 <%--  --%>
 <%--  --%>
@@ -134,11 +134,17 @@ else {
 	    <td>
 	        <input value="<%=rs.getInt("catid")%>" name="cid" size="15"/>
 	    </td>
-	
-	    <%-- Get the price --%>
-	    <td>
-	        <input value="<%=rs.getInt("price")%>" name="price" size="15"/>
-	    </td>
+    
+        <%-- Get the price --%>
+        <td>
+            <input value="<%=rs.getInt("price")%>" name="price" size="15"/>
+        </td>
+            </form>
+
+        <%-- Link --%>
+        <td>
+            <a href="productOrder.jsp?prodid=<%=rs.getInt("id")%>">Order <%=rs.getString("name")%></a>
+        </td>
 	</tr>
   <%}%>
 
