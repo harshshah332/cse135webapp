@@ -60,99 +60,6 @@ try
         cost = -1;
     }
     %>
-<%-- owner can insert new products --%>
-<%if(("insert").equals(action))
-{
-    if (name==null || unit==null || cat==null ||
-        name=="" || unit=="" || cat=="" || cost<=0)
-    {
-        %><h3>Failed to insert new product!</h3><%
-    }
-    else
-    {
-        try
-        {
-            String SQL_I = "INSERT INTO products (name,SKU,catid,price) " +
-                           "SELECT '"+name+"','"+unit+"',c.id,"+cost+" " +
-                           "FROM categories c WHERE c.name='"+cat+"'";
-            conn.setAutoCommit(false);
-            if (stmt.executeUpdate(SQL_I)==1) {
-                // TODO: Summary of product?
-                %><h3>Submitted product!</h3><%
-            }
-            else
-            {
-                %><h3>Failed to insert new product!</h3><%
-            }
-            conn.commit();
-            conn.setAutoCommit(true);
-        }
-        catch (Exception e)
-        {
-            %><h3>Failed to insert new product!</h3><%
-            conn.setAutoCommit(true);
-        }
-    }
-}
-else if(("update").equals(action))
-{
-    if (name==null || unit==null || cat==null ||
-        name=="" || unit=="" || cat=="" || cost<=0)
-    {
-        // all fields must be filled
-        // could split for convenience, only update non-empty fields
-        %><h3>Update failure!</h3><%
-    }
-    else
-    {
-        try
-        {
-            String SQL_U = "UPDATE products "+
-                           "SET name='"+name+"',"+"SKU='"+unit+"',"+
-                               "catid=(SELECT c.id FROM categories c WHERE c.name='"+cat+"')"+
-                               ",price="+cost+
-                           "WHERE id="+pid;
-            conn.setAutoCommit(false);
-            if (stmt.executeUpdate(SQL_U)==1) {
-                %><h3>Update success!</h3><%
-            }
-            else
-            {
-                %><h3>Update failure!</h3><%
-            }
-            conn.commit();
-            conn.setAutoCommit(true);
-        }
-        catch (Exception e)
-        {
-            %><h3>Update failure!</h3><%
-            conn.setAutoCommit(true);
-        }
-    }
-}
-else if(("delete").equals(action))
-{
-    try
-    {
-        String SQL_U = "DELETE FROM products "+
-                       "WHERE id="+pid;
-        conn.setAutoCommit(false);
-        if (stmt.executeUpdate(SQL_U)==1) {
-            %><h3>Delete success!</h3><%
-        }
-        else
-        {
-            %><h3>Delete failure! Please enter a valid product id.</h3><%
-        }
-        conn.commit();
-        conn.setAutoCommit(true);
-    }
-    catch (Exception e)
-    {
-        %><h3>Delete failure! Please enter a valid product id.</h3><%
-        conn.setAutoCommit(true);
-    }
-}%>
 <%--layout is 2 columns: 1st column has 2 rows  (search & category list)
                          2nd column has 1 row   (result)
     2 variables: selection & search
@@ -164,7 +71,7 @@ else if(("delete").equals(action))
             if searched == "", search = * --%>
 
 <%-- search --%>
-<form action="products.jsp" method="POST">
+<form action="productBrowsing.jsp" method="POST">
     <input type="text" name="cid" id="cid" value="<%=cid%>" style="display:none">
 </form>
 
@@ -173,7 +80,7 @@ else if(("delete").equals(action))
 rs=stmt.executeQuery(SQL);
 // ALL PRODUCTS?
 while(rs.next()) {
-  %><a href="products.jsp?cid="+<%=rs.getInt(1)%> target=\"_self\"><%=rs.getString(2)%></a><br><%
+  %><a href="productBrowsing.jsp?cid="+<%=rs.getInt(1)%> target=\"_self\"><%=rs.getString(2)%></a><br><%
 }%>
 <%--  --%>
 <%--  --%>
@@ -204,7 +111,7 @@ else {
 %>
 
 	<tr>
-	    <form action="products.jsp" method="POST">
+	    <form action="productBrowsing.jsp" method="POST">
 	    <input type="hidden" name="action" value="update"/>
 	    <input type="hidden" name="id" value="<%=rs.getInt("id")%>"/>
 	
