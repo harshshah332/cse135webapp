@@ -13,10 +13,15 @@
 
 
       <a href="products.jsp" >Products</a> <br>
-      <a href = "productsBrowsing,.jsp"> Products Browsing</a> <br>
+      <a href = "productsBrowsing.jsp"> Products Browsing</a> <br>
       <a href="productOrder.jsp" >Product Order</a> <br>
       <a href = "buyShoppingCart.jsp">Buy Shopping Cart</a><br>
+      <a href = "home.jsp">HomePage</a><br>
       <br>
+      
+ <div style="width:80%; position:center; ">
+		<h3>Hi, <%= session.getAttribute( "name") %>.</h3>
+</div>
       
  <form action = "categories.jsp" method = "POST" >
 <input type = "text" placeholder = "Product Category Name" name = "cname">
@@ -59,10 +64,12 @@ if(request.getParameter("insert")!= null) {
 		 }
 	try {
 
-		conn= DriverManager.getConnection(
-				"jdbc:postgresql://localhost:5432/Momo", "Momo",
-				"");
-
+		String url="jdbc:postgresql://localhost/cse135";
+	    String postgresUsername="postgres";
+	    String password="postgres";
+		conn =DriverManager.getConnection(url, postgresUsername, password);
+		
+		
 		%>
 		<table border = "2">
 		<tr>

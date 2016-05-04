@@ -14,7 +14,7 @@
 	{   %>
       <a href="categories.jsp" >Categories</a> <br>
       <a href="products.jsp" >Products</a> <br>
-      <a href = "productsBrowsing,.jsp"> Products Browsing</a> <br>
+      <a href = "productsBrowsing.jsp"> Products Browsing</a> <br>
       <a href="productOrder.jsp" >Product Order</a> <br>
       <a href = "buyShoppingCart.jsp">Buy Shopping Cart</a><br>
       
@@ -25,7 +25,7 @@ else if(session.getAttribute("role").equals("customer"))
 {
 	
       %>
-      <a href = "productsBrowsing,.jsp"> Products Browsing</a> <br>
+      <a href = "productsBrowsing.jsp"> Products Browsing</a> <br>
       <a href="productOrder.jsp" >Product Order</a> <br>
       <a href = "buyShoppingCart.jsp">Buy Shopping Cart</a><br>
 

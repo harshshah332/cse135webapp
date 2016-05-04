@@ -45,9 +45,12 @@ else {
 		 }
 	try {
 
-		conn= DriverManager.getConnection(
-				"jdbc:postgresql://localhost:5432/Momo", "Momo",
-				"");
+		String url="jdbc:postgresql://localhost/cse135";
+	    String postgresUsername="postgres";
+	    String password="postgres";
+		conn =DriverManager.getConnection(url, postgresUsername, password);
+		
+		
 	    boolean userExist = false;
 		stmt = conn.createStatement();
 		SQL = "SELECT * FROM users WHERE name=?";
