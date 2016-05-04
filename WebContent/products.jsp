@@ -83,19 +83,25 @@ if (role == null)
             }
             else
             {
-                String SQL_I = "INSERT INTO products (name,SKU,catid,price) " +
-                               "SELECT '"+name+"','"+unit+"',c.id,"+cost+" " +
-                               "FROM categories c WHERE c.name='"+cat+"'";
-                conn.setAutoCommit(false);
-                if (stmt.executeUpdate(SQL_I)==1) {
-                    %><h3>Submitted product!</h3><%
-                }
-                else
-                {
-                    %><h3>Failed to insert new product!</h3><%
-                }
-                conn.commit();
-                conn.setAutoCommit(true);
+            	try{
+	                String SQL_I = "INSERT INTO products (name,SKU,catid,price) " +
+	                               "SELECT '"+name+"','"+unit+"',c.id,"+cost+" " +
+	                               "FROM categories c WHERE c.name='"+cat+"'";
+	                conn.setAutoCommit(false);
+	                if (stmt.executeUpdate(SQL_I)==1) {
+	                    %><h3>Submitted product!</h3><%
+	                }
+	                else
+	                {
+	                    %><h3>Failed to insert new product!</h3><%
+	                }
+	                conn.commit();
+	                conn.setAutoCommit(true);
+            	}
+            	catch(Exception e){
+            		%><h3>Failed to insert new product!</h3><%
+            		conn.setAutoCommit(true);
+            	}
             }
         }%>
         <div style="display: block; position: absolute; width: 100%; padding: 10px 12px;">
