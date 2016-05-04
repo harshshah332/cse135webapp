@@ -164,10 +164,7 @@ if (role == null)
                 }
                 conn.commit();
                 conn.setAutoCommit(true);
-                catch(Exception e){
-                    %><h3>Failed to insert new product!</h3><%
-                    conn.setAutoCommit(true);
-                }
+            }
             catch (Exception e)
             {
                 %><h3>Delete failure! Please enter a valid product id.</h3><%
@@ -222,8 +219,8 @@ if (role == null)
         
         <%-- do query 
              SELECT       WHERE (p.name LIKE %str%) AND (c.id == p.catid) && (c.name == category) --%>
-      <%if (cat!=null && !cat.equals("all")) {
-            rs=stmt.executeQuery("SELECT * FROM products WHERE catid=(SELECT id FROM categories WHERE name="+cat+")");
+      <%if (request.getParameter("cat")!=null && !request.getParameter("cat").equals("all")) {
+            rs=stmt.executeQuery("SELECT * FROM products WHERE catid=(SELECT id FROM categories WHERE name="+request.getParameter("cat")+")");
         }
         else {
             rs=stmt.executeQuery("SELECT * FROM products");
