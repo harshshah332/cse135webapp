@@ -10,8 +10,14 @@
 <%@ page language="java" import="java.sql.*"%>
 <%@ page language="java" import="java.util.*"%>
 
-
-<%
+<% String prev = request.getHeader("referer");
+   if(!prev.contains("products_browsing.jsp")){%>
+   
+   <h4> INVALID REQUEST</h4>
+   <% 
+   return; 
+   }
+   else{
 	if(session.getAttribute("name")!=null) {
 %>
 
@@ -159,7 +165,7 @@ int val = 4;
 	} else {
 		out.println("You must log in. <br><a href=\"login.jsp\" target=\"_self\"><i>Please go back to the login page and try again.</i></a></font><br>");
 	}
-
+   }
 %>
 
 </body>
