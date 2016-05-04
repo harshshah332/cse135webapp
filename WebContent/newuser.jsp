@@ -12,7 +12,7 @@
 
 <% 
     String username = (request.getParameter("username")).trim().toLowerCase();
-    String ageString = (request.getParameter("ageint"));
+	String ageString = (request.getParameter("ageint").trim());
     String roleString = (request.getParameter("rolename"));
     String stateString = (request.getParameter("statename"));
 
