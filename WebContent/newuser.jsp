@@ -73,7 +73,20 @@ else {
 			
 		}
 		else if(userExist == false){
-		  int age = Integer.parseInt(ageString);
+			int age = 0;
+	    try{
+		  age = Integer.parseInt(ageString);
+	    }
+	    
+	    catch (Exception e){
+	    	%>
+	    	<h4> Sign up failed, please enter Valid Age</h4>
+	    	<form action = "signup.jsp">
+    <input type="submit" class="btn btn-default" value="Try Again">
+    </form>
+	    	<% 
+	    	return; 
+	    }
 	      SQL = "INSERT INTO users (state,age,role,name) VALUES (?,?,?,?)";
 	      pstmt = conn.prepareStatement(SQL);
 	      pstmt.setString(1,stateString);
