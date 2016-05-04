@@ -10,7 +10,8 @@
 <%@ page language="java" import="java.util.*"%>
 
 <%
-	if(session.getAttribute("name")!=null || session.getAttribute("name") == null) {
+
+	if(session.getAttribute("name")!=null) {
 %>
 
 <div style="width:80%; position:absolute; top:0%;  ">
@@ -58,9 +59,10 @@
 	conn =DriverManager.getConnection(url, user, password);
 	stmt =conn.createStatement();
 	int userID = (Integer)session.getAttribute( "userID"); //get the userID of the logged in user
-	SQL="select p.name, c.amount, p.price from products p, users u, carts c where c.userid=u.id and c.prodid=p.id and c.userid="+userID;
+	//SQL="select p.name, c.amount, p.price from products p, users u, carts c where c.userid=u.id and c.prodid=p.id and c.userid="+userID;
+	SQL="select p1.name, c1.amount, p1.price from products p1, users u1, carts c1 where c1.userid="+userID+ "and u1.id= c1.userid and p1.id=c1.prodid";
 	rs=stmt.executeQuery(SQL);
-
+	
 	%>
 
 

@@ -9,11 +9,11 @@
 
 <%@ page language="java" import="java.sql.*"%>
 <%@ page language="java" import="java.util.*"%>
-
+<%@ page language="java" import="java.util.Date"%>
+<%@ page language="java" import="java.text.SimpleDateFormat"%>
 <%
-String name = null;
-name = (String)session.getAttribute("name");  //get the role of the logged in user
-if(name!=null ) {
+
+if(session.getAttribute( "name")!=null ) {
 %>
 
 	
@@ -53,6 +53,7 @@ if(name!=null ) {
 	try { cardString = request.getParameter("card"); } catch(Exception e){cardString=null;}
 	try {
 		cardNumber =  Integer.parseInt(cardString);
+	//	cardNumber =  33;
 	
 		if (cardNumber > 0) {
 
@@ -68,12 +69,14 @@ if(name!=null ) {
 
 
 				SQL="select p.name, c.amount, p.price, c.prodid from products p, users u, carts c where c.userid=u.id and c.prodid=p.id and c.userid="+userID;
+			//	SQL="select p1.name, c1.amount, p1.price from users u1, carts c1, products p1 where c1.userid="+userID+ "and u1.id=c1.userid and p1.id=c1.prodid" ; 
+				
 				rs=stmt.executeQuery(SQL);
 
 %>
 
 
-				<table width=\"80%\"  border=\"2px\" align=\"center\">
+				<table width=\"80%\"  border=1px;  align=\"center\">
 				<tr align=\"center\">
 					<td width=\"30%\"><B>Product Name</B></td>
 					<td width=\"25%\"><B>Price</B></td>
@@ -97,42 +100,9 @@ if(name!=null ) {
 					 productPrice=rs.getInt(3);
 					 productTotalPrice=amount*productPrice;
 					 totalCartPrice+=productTotalPrice;
-					 		
-					 prep = conn.prepareStatement(insertPurchase);
-					
-					 prep.setInt(1, rs.getInt("prodid"));
-					 
-					 prep.setInt(2, amount);
-					 prep.setInt(3, productPrice);
-					
-					/*
-					 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");      
-    				 Date dateWithoutTime = sdf.parse(sdf.format(new Date()));    				 
-					 prep.setInt(4, dateWithoutTime.toString());
-					 */
 
 
-					 System.out.println("rs is  " + rs.getInt("prodid"));
-					
-				
-					try{
-					 prep = conn.prepareStatement(insertPurchase);
-					 prep.setInt(1, rs.getInt("prodid"));
-					 prep.setInt(2, amount);
-					 prep.setInt(3, productPrice);
-					 prep.setString(4, "55");
-					 prep.executeUpdate();
-		    		}
-									
-					catch(Exception e)
-					{
-						out.println("An internal error has occured.<br><a href=\"buyShoppingCart.jsp\" target=\"_self\"><i>Please go back to your shopping cart.</i></a><br>");
-					}
-					 
-					 
-					 
-					 
-%>		 
+ %>		 
 
 					<tr align=\"center\">
 						<td width=\"30%\"><B><%=productName%></B></td>
@@ -144,6 +114,49 @@ if(name!=null ) {
 					</tr>
 
 <%
+					 		
+					 prep = conn.prepareStatement(insertPurchase);
+					
+					 prep.setInt(1, rs.getInt("prodid"));
+					 
+					 prep.setInt(2, amount);
+					 prep.setInt(3, productPrice);
+					
+					/*
+					 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");      
+    				 Date dateWithoutTime = sdf.parse(sdf.format(new Date()));    				 
+					 prep.setInt(4, dateWithoutTime.toString()); */
+					 
+					 Date curDate = new Date();
+
+					 SimpleDateFormat format = new SimpleDateFormat();
+					 String DateToStr = format.format(curDate);
+					format = new SimpleDateFormat("yyyy/MM/dd");
+					DateToStr = format.format(curDate);
+					System.out.println(DateToStr.toString());
+
+
+					 System.out.println("rs is  " + rs.getInt("prodid"));
+					
+				
+					try{
+					 prep = conn.prepareStatement(insertPurchase);
+					 prep.setInt(1, rs.getInt("prodid"));
+					 prep.setInt(2, amount);
+					 prep.setInt(3, productPrice);
+					 prep.setString(4, DateToStr.toString());
+					 prep.executeUpdate();
+		    		}
+									
+					catch(Exception e)
+					{
+						out.println("An internal error has occured.<br><a href=\"buyShoppingCart.jsp\" target=\"_self\"><i>Please go back to your shopping cart.</i></a><br>");
+					}
+					 
+					 
+					 
+					 
+
 				
 %>
 
