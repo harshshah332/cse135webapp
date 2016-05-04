@@ -211,7 +211,7 @@ if (role == null)
         rs=stmt.executeQuery(SQL);
         // ALL PRODUCTS?
         while(rs.next()) {
-          %><a href="products.jsp?cid="+<%=rs.getInt(1)%> target=\"_self\"><%=rs.getString(2)%></a><br><%
+          %><a href="products.jsp?cid=<%=rs.getInt(1)%>"><%=rs.getString(2)%></a><br><%
         }%>
         <%--  --%>
         <%--  --%>
@@ -295,10 +295,6 @@ if (role == null)
         </tr>
           <%}%>
         
-        
-        <%-- return result in 2nd column (possible 3rd/4th column for update/delete fields?) --%>
-    
-        <%-- TODO: PRODUCT BROWSING JSP IS BASICALLY COLUMNS 1 & 2 --%>
       <%}
         finally
         {
