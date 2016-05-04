@@ -53,6 +53,7 @@ if(session.getAttribute( "name")!=null ) {
 	try { cardString = request.getParameter("card"); } catch(Exception e){cardString=null;}
 	try {
 		cardNumber =  Integer.parseInt(cardString);
+	//	cardNumber =  33;
 	
 		if (cardNumber > 0) {
 
@@ -75,7 +76,7 @@ if(session.getAttribute( "name")!=null ) {
 %>
 
 
-				<table width=\"80%\"  border=\"2px\" align=\"center\">
+				<table width=\"80%\"  border=1px;  align=\"center\">
 				<tr align=\"center\">
 					<td width=\"30%\"><B>Product Name</B></td>
 					<td width=\"25%\"><B>Price</B></td>
