@@ -11,11 +11,15 @@
 <%@ page language="java" import="java.sql.*"%>
 <%@ page language="java" import="java.util.*"%>
 
+ <div style="width:80%; position:center; ">
+		<h3>Hi, <%= session.getAttribute( "name") %>.</h3>
+</div>
+
 <%
 String role = null;
 role = (String) session.getAttribute("role");
-//if (role != null && role.equals("owner"))
-if (role == null)
+if (role != null && role.equals("owner"))  
+//if (role == null)
 {%>
     <%-- links for owners --%>
     <a href="categories.jsp">Categories</a>
@@ -47,22 +51,29 @@ if (role == null)
     
     try
     {
-        conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/app",
-                                           "postgres",
-                                           "postgres");
+    	String url="jdbc:postgresql://localhost/cse135";
+	    String postgresUsername="postgres";
+	    String password="postgres";
+		conn =DriverManager.getConnection(url, postgresUsername, password);
+		
         stmt = conn.createStatement();
         
         String action=null,name=null,unit=null,cat=null;
         int pid=-1,cid=-1,cost=-1;
         try
         {
-            // every action must be paired with a pid
             action = request.getParameter("action");
-            pid = Integer.parseInt(request.getParameter("pid"));
         }
         catch (Exception e)
         {
             action = null;
+        }
+        try
+        {
+            pid = Integer.parseInt(request.getParameter("pid"));
+        }
+        catch (Exception e)
+        {
             pid = -1;
         }
         try {
@@ -118,7 +129,6 @@ if (role == null)
                 name=="" || unit=="" || cat=="" || cost<=0)
             {
                 // all fields must be filled
-                // could split for convenience, only update non-empty fields
                 %><h3>Update failure!</h3><%
             }
             else
@@ -160,28 +170,28 @@ if (role == null)
                 }
                 else
                 {
-                    %><h3>Delete failure! Please enter a valid product id.</h3><%
+                    %><h3>Delete failure!</h3><%
                 }
                 conn.commit();
                 conn.setAutoCommit(true);
             }
             catch (Exception e)
             {
-                %><h3>Delete failure! Please enter a valid product id.</h3><%
+                %><h3>Delete failure!</h3><%
                 conn.setAutoCommit(true);
             }
         }%>
         <div style="display: block; position: absolute; width: 100%; padding: 10px 12px;">
             <form action="products.jsp" method="POST">
-                <input type="text" name="action" id="action" value="insert"  style="display:none">
+                <input type="text" name="action" id="action" value="insert" style="display:none">
                 <input type="text" placeholder="Item Name" name="item">
                 <input type="text" placeholder="SKU" name="sku">
                 <input type="text" placeholder="Price" name="price">
                 <select name="category">
-                  <%SQL = "SELECT c.name FROM categories c";
+                  <%SQL = "SELECT name FROM categories";
                     rs=stmt.executeQuery(SQL);
                     while(rs.next()) {
-                      %><option value=<%=rs.getString(1)%>><%=rs.getString(1)%></option><%
+                      %><option value=<%=rs.getString("name")%>><%=rs.getString("name")%></option><%
                     }%>
                 </select>
                 <input type="hidden" name="dropdown" id="dropdown">
@@ -202,6 +212,7 @@ if (role == null)
                     if searched == "", search = * --%>
         
         <%-- search --%>
+        <%-- =============================== TODO ================================== --%>
         <form action="products.jsp" method="POST">
             <input type="text" name="cid" id="cid" value="<%=cid%>" style="display:none">
         </form>
@@ -219,7 +230,7 @@ if (role == null)
         
         <%-- do query 
              SELECT       WHERE (p.name LIKE %str%) AND (c.id == p.catid) && (c.name == category) --%>
-      <%if (request.getParameter("cat")!=null && !request.getParameter("cat").equals("all")) {
+      <%if (request.getParameter("cat")!=null) {
             rs=stmt.executeQuery("SELECT * FROM products WHERE catid=(SELECT id FROM categories WHERE name="+request.getParameter("cat")+")");
         }
         else {
@@ -233,18 +244,6 @@ if (role == null)
             <th>SKU</th>
             <th>Category ID</th>
             <th>Price</th>
-        </tr>
-
-        <tr>
-            <form action="products.jsp" method="POST">
-                <input type="hidden" name="action" value="insert"/>
-                <th>&nbsp;</th>
-                <th><input value="" name="name" size="15"/></th>
-                <th><input value="" name="sku" size="15"/></th>
-                <th><input value="" name="cid" size="15"/></th>
-                <th><input value="" name="price" size="15"/></th>
-                <th><input type="submit" value="Insert"/></th>
-            </form>
         </tr>
 
         <%-- -------- Iteration Code -------- --%>
@@ -285,6 +284,7 @@ if (role == null)
 
             <%-- Button --%>
             <td><input type="submit" value="Update"></td>
+            <input type="hidden" value="<%=rs.getInt("id")%>" name="pid"/>
             </form>
             <form action="products.jsp" method="POST">
             <input type="hidden" name="action" value="delete"/>

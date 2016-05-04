@@ -10,21 +10,24 @@
 <%@ page language="java" import="java.sql.*"%>
 <%@ page language="java" import="java.util.*"%>
 
-<% String prev = request.getHeader("referer");
-   if(!prev.contains("products_browsing.jsp")){%>
-   
-   <h4> INVALID REQUEST</h4>
-   <% 
-   return; 
-   }
-   else{
+<% 
+if(request.getParameter("prodid") == null){
+	System.out.println("ts");
+	
+	
+}
+else{
+	System.out.println("fg");
+}
+
+
 	if(session.getAttribute("name")!=null) {
 %>
 
 
 <div style="width:80%; position:center; ">
 
-		<h3>Hi, <%= session.getAttribute( "name") %>Your Current Shopping Cart</h3>
+		<h3>Hi, <%= session.getAttribute( "name") %>. Your Current Shopping Cart</h3>
 
 
 
@@ -35,7 +38,7 @@
 <div style="width:20%; position:absolute; top:15%; left:0px; height:75%%; border-bottom:1px; border-bottom-style:solid;border-left:1px; border-left-style:solid;border-right:1px; border-right-style:solid;border-top:1px; border-top-style:solid;">
 	<table width="100%">
 		<tr><td><a href="buyShoppingCart.jsp" target="_self"> Shopping Cart</a></td></tr>
-		<tr><td><a href="products_browsing.jsp" target="_self">Browse Products</a></td></tr>
+		<tr><td><a href=productsBrowsing.jsp target="_self">Browse Products</a></td></tr>
 	</table>	
 </div>
 
@@ -121,7 +124,7 @@ String SQL=null;
 <div style="width:79%; position:absolute; top:95%; right:0px; id;">
 <%
 
-int productID = 5; 
+int productID = Integer.parseInt(request.getParameter("prodid")); 
 
 	rs=stmt.executeQuery("SELECT * FROM products where id="+productID+";");
 	productName="";
@@ -165,7 +168,6 @@ int val = 4;
 	} else {
 		out.println("You must log in. <br><a href=\"login.jsp\" target=\"_self\"><i>Please go back to the login page and try again.</i></a></font><br>");
 	}
-   }
 %>
 
 </body>

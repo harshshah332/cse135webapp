@@ -28,7 +28,7 @@
 <div style="width:20%; position:absolute; top:15%; left:0px; height:75%%; border-bottom:1px; border-bottom-style:solid;border-left:1px; border-left-style:solid;border-right:1px; border-right-style:solid;border-top:1px; border-top-style:solid;">
 	<table width="100%">
 		<tr><td><a href="buyShoppingCart.jsp" target="_self">Buy Shopping Cart</a></td></tr>
-		<tr><td><a href="products_browsing.jsp" target="_self">Show Products</a></td></tr>
+		<tr><td><a href="productsBrowsing.jsp" target="_self">Show Products</a></td></tr>
 
 	</table>	
 </div>
