@@ -11,13 +11,23 @@
 <%@ page language = "java" import = "java.sql.*" %>
 <%@ page language = "java" import = "java.util.*" %>
 
-<form action = "categories.jsp" method = "POST" >
+
+      <a href="products.jsp" >Products</a> <br>
+      <a href = "productsBrowsing,.jsp"> Products Browsing</a> <br>
+      <a href="productOrder.jsp" >Product Order</a> <br>
+      <a href = "buyShoppingCart.jsp">Buy Shopping Cart</a><br>
+      <br>
+      
+ <form action = "categories.jsp" method = "POST" >
 <input type = "text" placeholder = "Product Category Name" name = "cname">
 <input type = "text" placeholder = "Category Description"  name = "cdesc">
 <input type="submit" name = "insert" class="btn btn-default" value="Insert">
 <br> 
-</form>
-<%
+</form> 
+<br>
+
+
+<% 
 String catName = null;
 String catDesc = null;
 if(request.getParameter("insert")!= null) {
@@ -167,6 +177,8 @@ if(request.getParameter("insert")!= null) {
 	
 
   %>
+  
+     
 
 
 </body>
