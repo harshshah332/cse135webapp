@@ -86,7 +86,7 @@ try
 rs=stmt.executeQuery(SQL);
 // ALL PRODUCTS?
 while(rs.next()) {
-  %><a href="productBrowsing.jsp?cid=<%=rs.getInt("id")%>"><%=rs.getString("name")%></a><br><%
+  %><a href="productsBrowsing.jsp?cid=<%=rs.getInt("id")%>"><%=rs.getString("name")%></a><br><%
 }%>
 <%--  --%>
 <%--  --%>
@@ -108,6 +108,7 @@ else {
     <th>SKU</th>
     <th>Category ID</th>
     <th>Price</th>
+    <th>Click to order this product</th>
 </tr>
 
 <%-- -------- Iteration Code -------- --%>

@@ -16,6 +16,7 @@
       <a href = "productsBrowsing.jsp"> Products Browsing</a> <br>
       <a href="productOrder.jsp" >Product Order</a> <br>
       <a href = "buyShoppingCart.jsp">Buy Shopping Cart</a><br>
+      <a href = "home.jsp">HomePage</a><br>
       <br>
       
  <div style="width:80%; position:center; ">

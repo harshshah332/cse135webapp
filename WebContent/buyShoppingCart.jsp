@@ -29,7 +29,8 @@
 	<table width="100%">
 		<tr><td><a href="buyShoppingCart.jsp" target="_self">Buy Shopping Cart</a></td></tr>
 		<tr><td><a href="productsBrowsing.jsp" target="_self">Show Products</a></td></tr>
-
+		<tr><td><a href="home.jsp" target="_self">HomePage</a></td></tr>
+		
 	</table>	
 </div>
 
