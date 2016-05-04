@@ -31,8 +31,8 @@
 String catName = null;
 String catDesc = null;
 if(request.getParameter("insert")!= null) {
- catName = request.getParameter("cname");
- catDesc = request.getParameter("cdesc");
+ catName = request.getParameter("cname").trim().toLowerCase();
+ catDesc = request.getParameter("cdesc").trim().toLowerCase();
 }
 	if(catName == "" || catDesc == "")
 	{
@@ -76,7 +76,10 @@ if(request.getParameter("insert")!= null) {
 		SQL = "SELECT * from categories";
 		stmt = conn.createStatement();
 	    rs =stmt.executeQuery(SQL);
+	  
 	    while(rs.next()){
+	  
+	    	
 	    	%>
 	    	<%
 	    	if(request.getParameter("delete_cat"+ rs.getString("name"))!= null){
@@ -87,8 +90,8 @@ if(request.getParameter("insert")!= null) {
 		    }
 	    	
 	    	if(request.getParameter("update_name"+ rs.getString("name"))!= null){
-	    		String name = request.getParameter("upname" +rs.getString("name"));
-	    		if(name != ""){
+	    		String name = request.getParameter("upname" +rs.getString("name")).trim();
+	    		if(!name.isEmpty()){
 		    	SQL = "UPDATE categories SET name = ? WHERE name = ?";
 		    	pstmt = conn.prepareStatement(SQL);
 		    	pstmt.setString(1, name);
@@ -98,8 +101,8 @@ if(request.getParameter("insert")!= null) {
 		    
 		    }
 	    	if(request.getParameter("update_desc"+ rs.getString("description"))!= null){
-	    		String description = request.getParameter("updesc" +rs.getString("description"));
-	    		  if(description!= ""){
+	    		String description = request.getParameter("updesc" +rs.getString("description")).trim();
+	    		  if(!description.isEmpty()){
 	    			
 	    		  
 		    	SQL = "UPDATE categories SET description = ? WHERE description = ?";
@@ -152,11 +155,29 @@ if(request.getParameter("insert")!= null) {
 		pstmt.executeUpdate();
 		
       }
+        String username = null;
+        stmt = conn.createStatement();
+		SQL = "SELECT * FROM categories WHERE name=?";
+		pstmt = conn.prepareStatement(SQL);
+		pstmt.setString(1, catName);
+		rs=pstmt.executeQuery();
+		
+
+		while(rs.next()){
+			
+			 username = rs.getString("name");
+			 
+		}
+		if(catName.equals(username)){
 	 
 	%>
-	
+	   <form action = "categories.jsp">
+	   <h4>Category Name already exists, please enter different one </h4>
+	   </form>
 	
 	 <%	
+	 
+		}
      rs.close();
      stmt.close();
      conn.close();
