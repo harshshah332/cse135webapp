@@ -14,6 +14,7 @@
 String rows= ""; 
 String order= ""; 
 String state = "";
+Boolean next_clicked = false;
 	
 long   query1Start, query1Finish, query2Start, query2Finish, query3Start, query3Finish, query4Start, query4Finish;
 double query1Time, query2Time, query3Time, query4Time;
@@ -54,6 +55,15 @@ double query1Time, query2Time, query3Time, query4Time;
 		    	state = "all_filter";
 		    }
 		    System.out.println("filter is " + state);
+		    String nextClicked = request.getParameter("next_clicked");
+		    if(!(nextClicked == null)){
+		    	next_clicked = true;
+		    }
+		    System.out.println("next_clicked is " + next_clicked);
+		    
+		    
+		    
+		    
 		    String sql, sql1, sql2, sql3 = "";
 		     
 		     
@@ -97,62 +107,62 @@ double query1Time, query2Time, query3Time, query4Time;
 </div>
 <div>
 
-
-  
-    <div class="form-group">
-  	<label for="rows">Rows</label>
-  	<select name="rows" id="rows" class="form-control">
-  	<% 
-  	if(rows.equals("state")){ %>
- 	 	<option value="customer">Customer</option>
-  		<option value="state" selected >State</option> <%
-	}
-	else{ %>
- 		<option value="customer" selected>Customer</option>
-  		<option value="state" >State</option> <%
-	} %>
-			
-	</select>
-	
-	<div class="form-group">
-  	<label for="order">Order</label>
-  	<select name="order" id="order" class="form-control">
-  	
-  	  	<% 
-  	if(order.equals("alphabetical_order")){ %>
-	    <option value="alphabetical_order" selected>Alphabetical</option>
-	    <option value="totalorder">Total k</option> <%
-	}
-	else{ %>
-	    <option value="alphabetical_order">Alphabetical</option>
-	    <option value="totalorder" selected>Total k</option> <%
-	} %>
-
-	</select>
-
-<%
-	sql = "Select name, id from categories";
-	stmt = conn.createStatement();
-	rs = stmt.executeQuery(sql);
-%>
-	
+<% 
+ 	if(!next_clicked) { %>
 	    <div class="form-group">
-  	<label for="filter">Filter</label>
-  	<select name="filter" id="filter" class="form-control">
-  		    <option value="all_filter" selected>All</option>
-
-<%
-	while (rs.next()){
-		if(rs.getString(2).equals(state)){
-%>
-			<option value=  <%=rs.getString(2) %> selected> <%=rs.getString(1) %>    </option>	
-<% 	
+	  	<label for="rows">Rows</label>
+	  	<select name="rows" id="rows" class="form-control">
+	  	<% 
+	  	if(rows.equals("state")){ %>
+	 	 	<option value="customer">Customer</option>
+	  		<option value="state" selected >State</option> <%
 		}
-		else { %>
-			<option value=  <%=rs.getString(2) %> > <%=rs.getString(1) %>    </option>	<% 
+		else{ %>
+	 		<option value="customer" selected>Customer</option>
+	  		<option value="state" >State</option> <%
+		} %>
+				
+		</select>
+		
+		<div class="form-group">
+	  	<label for="order">Order</label>
+	  	<select name="order" id="order" class="form-control">
+	  	
+	  	  	<% 
+	  	if(order.equals("alphabetical_order")){ %>
+		    <option value="alphabetical_order" selected>Alphabetical</option>
+		    <option value="totalorder">Total k</option> <%
 		}
-	}
-%>
+		else{ %>
+		    <option value="alphabetical_order">Alphabetical</option>
+		    <option value="totalorder" selected>Total k</option> <%
+		} %>
+	
+		</select>
+	
+	<%
+		sql = "Select name, id from categories";
+		stmt = conn.createStatement();
+		rs = stmt.executeQuery(sql);
+	%>
+		
+		    <div class="form-group">
+	  	<label for="filter">Filter</label>
+	  	<select name="filter" id="filter" class="form-control">
+	  		    <option value="all_filter" selected>All</option>
+	
+	<%
+		while (rs.next()){
+			if(rs.getString(2).equals(state)){
+	%>
+				<option value=  <%=rs.getString(2) %> selected> <%=rs.getString(1) %>    </option>	
+	<% 	
+			}
+			else { %>
+				<option value=  <%=rs.getString(2) %> > <%=rs.getString(1) %>    </option>	<% 
+			}
+		}
+	%>
 
 	</select>
 	
@@ -164,7 +174,7 @@ double query1Time, query2Time, query3Time, query4Time;
   </div>
   
 </form>
-       
+<%	 } //end of if stmt for checking if next_clicked %>     
        <table border = "2">
     
        <% 
@@ -489,6 +499,7 @@ double query1Time, query2Time, query3Time, query4Time;
 				<input type ="hidden" name=order value="<%=order%>">
 				<input type ="hidden" name=row_offset value="<%=row_offset_updated%>">
 				<input type ="hidden" name=col_offset value="<%=col_offset%>">
+				<input type ="hidden" name=next_clicked value="next_clicked">
 
 			</div> <% 
 			if(rows.equals("state")){ %>
@@ -517,6 +528,7 @@ double query1Time, query2Time, query3Time, query4Time;
 				<input type ="hidden" name=order value="<%=order%>">
 				<input type ="hidden" name=row_offset value="<%=row_offset%>">
 				<input type ="hidden" name=col_offset value="<%=col_offset_updated%>">
+				<input type ="hidden" name=next_clicked value="next_clicked">
 
 			</div>
 			<button type="submit" class="btn btn-primary">Next 10 Products</button>
@@ -531,19 +543,18 @@ double query1Time, query2Time, query3Time, query4Time;
      </table>
      <% 
     	 
+
+     
 	}
 	 catch (Exception e) {
 		 System.out.println(e);
-	 }  
-
+	 } 
        
+
+  //     stmt.close();
+    //   conn.close();
 		
-	if(rows == null || rows.trim() == ""){
-		rows = "customer";		
-	}
-       stmt.close();
-       conn.close();
-		
+ 
 
 %>
 
