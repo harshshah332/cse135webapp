@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-<%@ page import="java.sql.*, javax.sql.*, javax.naming.*"%>
+<%@ page import="java.sql.*, javax.sql.*, javax.naming.*, java.lang.*"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -14,6 +14,8 @@
 String rows= ""; 
 String order= ""; 
 String state = "";
+int totalRows = 0;
+int totalCols = 0;
 Boolean next_clicked = false;
 	
 long   query1Start, query1Finish, query2Start, query2Finish, query3Start, query3Finish, query4Start, query4Finish;
@@ -187,23 +189,23 @@ double query1Time, query2Time, query3Time, query4Time;
  		
  		if(order.equals("alphabetical_order") || order.equals(null) ){
  			
- 			sql1 = "SELECT users.id, users.name, COALESCE (SUM(o.price), 0) AS amount" + 
+ 			sql1 = "SELECT users.id, users.name, COALESCE (SUM(o.price), 0) AS amount, COUNT(*) OVER () as totalRows" + 
  					   " FROM (SELECT name, id FROM users ORDER BY name ASC OFFSET "+row_offset+" )" +
  					   " AS users LEFT JOIN orders o" +  
  					   " ON (o.user_id = users.id)" + 
  					   " GROUP BY users.id, users.name" +
- 					   " ORDER BY users.name asc"		;
+ 					   " ORDER BY users.name asc LIMIT 20"		;
  			
  		}
  		
  		else{  //order by top K
  			
- 			sql1 = "SELECT users.id, users.name, COALESCE (SUM(o.price), 0) AS amount" + 
+ 			sql1 = "SELECT users.id, users.name, COALESCE (SUM(o.price), 0) AS amount, COUNT(*) OVER () as totalRows" + 
 					   " FROM (SELECT name, id FROM users ORDER BY name ASC OFFSET "+row_offset+" )" +
 					   " AS users LEFT JOIN orders o" +  
 					   " ON (o.user_id = users.id)" + 
 					   " GROUP BY users.id, users.name" +
-					   " order by COALESCE (SUM(o.price), 0)  desc"		;		
+					   " order by COALESCE (SUM(o.price), 0)  desc LIMIT 20"		;		
  		}
  	
  	}
@@ -212,17 +214,22 @@ double query1Time, query2Time, query3Time, query4Time;
  		
  		if(order.equals("alphabetical_order") || order.equals(null) ){
  			System.out.println("here state query ");
- 			sql1 = "SELECT state from users ORDER BY state ASC OFFSET "+row_offset+"" ;
- 		}
- 		
- 		else{  //order by top K
- 			
- 			sql1 = "SELECT state.state, COALESCE (SUM(o.price), 0) AS amount" + 
+ 			sql1 = "SELECT state.state, COALESCE (SUM(o.price), 0) AS amount, COUNT(*) OVER () as totalRows" + 
 					   " FROM (SELECT state, id FROM users ORDER BY state ASC OFFSET "+row_offset+")" +
 					   " AS state LEFT JOIN orders o" +  
 					   " ON (o.user_id = state.id)" + 
 					   " GROUP BY state.state" + 
-					   " order by COALESCE (SUM(o.price), 0)  desc"		;	
+					   " order by state.state  asc LIMIT 20"		;
+ 		}
+ 		
+ 		else{  //order by top K
+ 			
+ 			sql1 = "SELECT state.state, COALESCE (SUM(o.price), 0) AS amount, COUNT(*) OVER () as totalRows" + 
+					   " FROM (SELECT state, id FROM users ORDER BY state ASC OFFSET "+row_offset+")" +
+					   " AS state LEFT JOIN orders o" +  
+					   " ON (o.user_id = state.id)" + 
+					   " GROUP BY state.state" + 
+					   " order by COALESCE (SUM(o.price), 0)  desc LIMIT 20"		;	
  			
  		}
  	
@@ -235,21 +242,21 @@ double query1Time, query2Time, query3Time, query4Time;
     	
     	
  		if(state.equals("all_filter") || state.equals(null) ){
- 	        sql2 = "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount" + 
- 	    			" FROM (SELECT id, name FROM products ORDER BY name ASC LIMIT 10  OFFSET "+col_offset+ ") AS prod" +
+ 	        sql2 = "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount, COUNT(*) OVER () as totalCols" + 
+ 	    			" FROM (SELECT id, name FROM products ORDER BY name ASC   OFFSET "+col_offset+ ") AS prod" +
  	    			" LEFT JOIN orders ON (orders.product_id = prod.id)" +
  	    			" GROUP BY prod.id, prod.name" +
- 	    			" order by prod.name asc";
+ 	    			" order by prod.name asc LIMIT 10";
  		}
  		else{
  			
  			//filter present
- 	        sql2 = "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount" + 
+ 	        sql2 = "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount, COUNT(*) OVER () as totalCols" + 
  	    			" FROM (SELECT id, name FROM products where products.category_id = " +state+ 
- 	        		" ORDER BY name ASC LIMIT 10 OFFSET "+col_offset+ ") AS prod" +
+ 	        		" ORDER BY name ASC OFFSET "+col_offset+ ") AS prod" +
  	    			" LEFT JOIN orders ON (orders.product_id = prod.id)" +
  	    			" GROUP BY prod.id, prod.name" +
- 	    			" order by prod.name asc";			
+ 	    			" order by prod.name asc LIMIT 10";			
  		}   	
     }
  	
@@ -258,21 +265,21 @@ double query1Time, query2Time, query3Time, query4Time;
     	
     	
  		if(state.equals("all_filter") || state.equals(null) ){
- 	        sql2 = "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount" + 
- 	    			" FROM (SELECT id, name FROM products ORDER BY name ASC LIMIT 10 OFFSET "+col_offset+ ") AS prod" +
+ 	        sql2 = "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount, COUNT(*) OVER () as totalCols" + 
+ 	    			" FROM (SELECT id, name FROM products ORDER BY name ASC OFFSET "+col_offset+ ") AS prod" +
  	    			" LEFT JOIN orders ON (orders.product_id = prod.id)" +
  	    			" GROUP BY prod.id, prod.name" +
- 	    			" order by COALESCE (SUM(orders.price), 0) desc";
+ 	    			" order by COALESCE (SUM(orders.price), 0) desc LIMIT 10";
  		}
  		else{
  			
  			//filter present
- 	        sql2 = "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount" + 
+ 	        sql2 = "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount, COUNT(*) OVER () as totalCols" + 
  	    			" FROM (SELECT id, name FROM products where products.category_id = " +state+ 
- 	        		" ORDER BY name ASC LIMIT 10 OFFSET "+col_offset+ ") AS prod" +
+ 	        		" ORDER BY name ASC OFFSET "+col_offset+ ") AS prod" +
  	    			" LEFT JOIN orders ON (orders.product_id = prod.id)" +
  	    			" GROUP BY prod.id, prod.name" +
- 	    			" order by COALESCE (SUM(orders.price), 0) desc ";			
+ 	    			" order by COALESCE (SUM(orders.price), 0) desc LIMIT 10 ";			
  		} 
     }
 
@@ -311,15 +318,20 @@ double query1Time, query2Time, query3Time, query4Time;
  	
  	query2Time = (query2Finish - query2Start) / 1000000.0;
  	System.out.println("Query 2 time = " + query2Time);
+
     
     
-    
-   	   %> <tr> <td> nothing </td>
+   	   %> <tr> <td> XXXXX </td>
    	   
  <%   	    //loop for product headers
- 	while(r2.next()){      %>
+ 	while(r2.next()){   
+ 			System.out.println("Total prods from query = " + r2.getInt(4));
+ 			totalCols = r2.getInt(4);
+ 			String header = r2.getString("name") + " ($" + Math.round(Float.valueOf(r2.getString("amount"))) + ")";
+ 			%>
  			  
- 		<td width=\"30%\" > <%=r2.getString("name") %> </td>
+ 		<td width=\"30%\" > <%=header %> </td>
+ 		
  			 
  			   
  	<% 	     	
@@ -333,13 +345,14 @@ double query1Time, query2Time, query3Time, query4Time;
  	
 	while(r1.next()){
     	    	//query for row data
-    	  //  	System.out.println(r1.getString(state) + " is state");
-    	    			
+    	  //  	System.out.println(r1.getString(state) + " is state"); 			
     String rowName = "";    			
   
     	//System.out.println("here");
        	if(rows.equals("customer") || rows.equals(null)){
        		rowName = r1.getString(2);
+       	    System.out.println("Total row names from query = " + r1.getInt(4)); 
+       	    totalRows = r1.getInt(4);
 
        		if(order.equals("alphabetical_order") || order.equals(null)){
        		
@@ -393,6 +406,8 @@ double query1Time, query2Time, query3Time, query4Time;
        	else{
        		System.out.println("STATES");
        		rowName = r1.getString(1);
+       	    System.out.println("Total row names from query = " + r1.getInt(3)); 
+       	    totalRows = r1.getInt(3);
  	    	String st = r1.getString(1); 
  	    	System.out.println(st);
 
@@ -469,8 +484,9 @@ double query1Time, query2Time, query3Time, query4Time;
    		   }
    		   
    	//	System.out.println("befpre r3 while");
+   		String header =rowName + " \n ($" + Math.round(Float.valueOf(r1.getString("amount"))) + ")";
    		 %>
-   		<tr> <td><%= rowName %> </td> 
+   		<tr> <td><%= header %> </td> 
    		<% 
    		//loop for row data
 			while(r3.next()){
@@ -485,9 +501,9 @@ double query1Time, query2Time, query3Time, query4Time;
 	} //end of first while
   	    
 
-     %>
-     
-     
+
+   	if(Integer.valueOf(row_offset)+20 < totalRows){ 		
+     %>     
      <tr><td colspan="1">
      <% 
 		int row_offset_updated = Integer.valueOf(row_offset) + 20;
@@ -515,8 +531,12 @@ double query1Time, query2Time, query3Time, query4Time;
 		</td>
 		<td colspan="20">
 		</td></tr>
-     
-     
+<% 
+   	}
+
+   	if(Integer.valueOf(col_offset)+10 < totalCols){  
+ %>
+   
           <tr><td colspan="1">
      <% 
 		int col_offset_updated = Integer.valueOf(col_offset) + 10;
@@ -537,7 +557,7 @@ double query1Time, query2Time, query3Time, query4Time;
 		<td colspan="20">
 		</td></tr>
      
-     
+     <% } %>
      
      
      </table>
