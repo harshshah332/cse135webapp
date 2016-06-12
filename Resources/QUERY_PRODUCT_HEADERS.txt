@@ -1,0 +1,40 @@
+query for product headers - ALPHABETICALLY - NO FILTER
+SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount 
+				FROM (SELECT id, name FROM products) AS prod 
+				LEFT JOIN orders ON (orders.product_id = prod.id) 
+				GROUP BY prod.id, prod.name
+				order by prod.name asc	
+
+
+query for product headers - ALPHABETICALLY - CATEGORY FILTER
+SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount 
+				FROM (SELECT id, name FROM products
+					WHERE products.category_id = <% insert category id %>) AS prod 
+				LEFT JOIN orders ON (orders.product_id = prod.id) 
+				GROUP BY prod.id, prod.name
+				order by prod.name asc	
+
+
+
+
+
+
+
+
+query for product headers - TOP K - NO FILTER
+SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount 
+				FROM (SELECT id, name FROM products) AS prod 
+				LEFT JOIN orders ON (orders.product_id = prod.id) 
+				GROUP BY prod.id, prod.name
+				order by COALESCE (SUM(orders.price), 0) desc
+
+
+
+
+query for product headers - TOP K - CATEGORY FILTER
+SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount 
+				FROM (SELECT id, name FROM products
+					WHERE products.category_id = <% insert category id %>) AS prod 
+				LEFT JOIN orders ON (orders.product_id = prod.id) 
+				GROUP BY prod.id, prod.name
+				order by COALESCE (SUM(orders.price), 0) desc
