@@ -1,0 +1,93 @@
+(customer) query for row data  - ALPHABETICALLY - NO FILTER
+SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount 
+				FROM (SELECT id, name FROM products) AS prod 
+				LEFT JOIN orders ON (orders.product_id = prod.id and orders.user_id = <% INSERT USER ID %> ) 
+				GROUP BY prod.id, prod.name
+				order by prod.name asc	
+
+
+
+
+
+(customer) query for row data - ALPHABETICALLY - CATEGORY FILTER
+SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount 
+					FROM (SELECT id, name FROM products 
+						WHERE products.category_id= <% INSERT CATEGORY ID %> 
+						ORDER BY name ASC ) AS prod 
+					LEFT JOIN orders ON (orders.product_id = prod.id and orders.user_id = <% INSERT USER ID %> ) 
+					GROUP BY prod.id, prod.name
+					order by prod.name asc
+
+
+
+(customer) query for row data - TOP K - NO FILTER
+SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount 
+				FROM (SELECT id, name FROM products) AS prod 
+				LEFT JOIN orders ON (orders.product_id = prod.id and orders.user_id = <% INSERT USER ID %> ) 
+				GROUP BY prod.id, prod.name
+				order by COALESCE (SUM(orders.price), 0)  DESC	
+
+
+
+(customer) query for row data - TOP K - CATEGORY FILTER 
+SELECT prod.id, prod.name,  COALESCE (SUM(orders.price), 0) AS amount 
+					FROM (SELECT id, name FROM products 
+						WHERE products.category_id=  <% INSERT CATEGORY ID %>
+						ORDER BY name ASC ) AS prod 
+					LEFT JOIN orders ON (orders.product_id = prod.id and orders.user_id =  <% INSERT USER ID %> ) 
+					GROUP BY prod.id, prod.name
+					order by COALESCE (SUM(orders.price), 0) DESC	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(state) query for row data  - ALPHABETICALLY - NO FILTER
+SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount 
+				FROM (SELECT id, name FROM products) AS prod 
+				LEFT JOIN orders ON (orders.product_id = prod.id 
+					and orders.user_id in (select id from users where state = <% INSERT STATE NAME %> ) )
+				GROUP BY prod.id, prod.name
+				order by prod.name asc	
+
+
+
+
+(state) query for row data - ALPHABETICALLY - CATEGORY FILTER
+SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount 
+				FROM (SELECT id, name FROM products WHERE products.category_id =  <% INSERT CATEGORY ID %>) AS prod 
+				LEFT JOIN orders ON (orders.product_id = prod.id 
+					and orders.user_id in (select id from users where state = <% INSERT STATE NAME %> ) )
+				GROUP BY prod.id, prod.name
+				order by prod.name asc	
+
+
+
+(state) query for row data - TOP K - NO FILTER
+SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount 
+				FROM (SELECT id, name FROM products) AS prod 
+				LEFT JOIN orders ON (orders.product_id = prod.id 
+					and orders.user_id in (select id from users where state = <% INSERT STATE NAME %> ) )
+				GROUP BY prod.id, prod.name
+				order by COALESCE (SUM(orders.price), 0) desc	
+
+
+
+(state) query for row data - TOP K - CATEGORY FILTER 
+SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount 
+				FROM (SELECT id, name FROM products WHERE products.category_id <% INSERT CATEGORY ID %>)
+				AS prod 
+				LEFT JOIN orders ON (orders.product_id = prod.id 
+					and orders.user_id in (select id from users where state = <% INSERT STATE NAME %> ) )
+				GROUP BY prod.id, prod.name
+				order by COALESCE (SUM(orders.price), 0) desc	

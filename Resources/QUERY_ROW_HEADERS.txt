@@ -1,0 +1,44 @@
+(customer) query for row headers - alphabetically
+SELECT usersTable.id, usersTable.name, COALESCE (SUM(o.price), 0) AS amount  
+					FROM (SELECT name, id FROM users) 
+					AS usersTable LEFT JOIN orders o  
+					ON (o.user_id = usersTable.id) 
+					GROUP BY usersTable.id, usersTable.name
+					ORDER BY usersTable.name asc					
+				
+
+(customer)  query for row headers - top - k
+SELECT usersTable.id, usersTable.name,  COALESCE (SUM(o.price), 0)  AS amount  
+					FROM (SELECT name, id FROM users 
+						ORDER BY name asc) 
+						AS usersTable 
+					LEFT JOIN orders o  
+					ON (o.user_id = usersTable.id) 
+					GROUP BY usersTable.id, usersTable.name
+					order by COALESCE (SUM(o.price), 0)  desc
+
+
+
+
+
+
+
+(state) query for row headers - alphabetically 
+SELECT state.state, COALESCE (SUM(o.price), 0) AS amount 
+					FROM (SELECT state, id FROM users) 
+					AS state 
+					LEFT JOIN orders o ON (o.user_id = state.id) 
+					GROUP BY state.state
+					order by state.state asc
+
+
+
+
+(state) query for row headers - TOP K 
+SELECT state.state, COALESCE (SUM(o.price), 0) AS amount 
+					FROM (SELECT state, id FROM users) 
+					AS state 
+					LEFT JOIN orders o ON (o.user_id = state.id) 
+					GROUP BY state.state
+					order by COALESCE (SUM(o.price), 0) desc
+					

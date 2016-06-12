@@ -1,12 +1,20 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-<%@ page import="java.sql.*, javax.sql.*, javax.naming.*, java.lang.*"%>
+<%@ page import="cell.*, java.sql.*, java.util.*, javax.naming.*, java.lang.*, java.util.Hashtable, org.json.simple.JSONObject,  org.json.simple.*"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 <title>CSE135 Project</title>
+
+
+
+   	   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<script type="text/javascript" src="updateTablejs.js"></script>
+	
+	
+	
 </head>
 
 
@@ -17,6 +25,21 @@ String state = "";
 int totalRows = 0;
 int totalCols = 0;
 Boolean next_clicked = false;
+
+
+
+if(application.getAttribute("cellTable")==null) {
+    application.setAttribute("cellTable", new Hashtable<String, Cell>());
+}
+
+if(application.getAttribute("headerTable")==null) {
+    application.setAttribute("headerTable", new Hashtable<String, Cell>());
+}
+
+
+
+Hashtable<String, Cell> cellTable =  new Hashtable<String, Cell>();
+Hashtable<String, Cell> headerTable =  new Hashtable<String, Cell>();
 	
 long   query1Start, query1Finish, query2Start, query2Finish, query3Start, query3Finish, query4Start, query4Finish;
 double query1Time, query2Time, query3Time, query4Time;
@@ -40,60 +63,17 @@ double query1Time, query2Time, query3Time, query4Time;
 		conn =DriverManager.getConnection(url, user, password);
     System.out.println("GOOD DRIVER");
  
-		    rows = request.getParameter("rows");
-		    if(rows == null ){
-		    	rows = "customer";
-		    }
-		    System.out.println("rows is " + rows);
-		   
-		    order = request.getParameter("order");
-		    if(order == null){
-		    	order = "alphabetical_order";
-		    }
-		    System.out.println("order is " + order);
+
 		    
 		    state = request.getParameter("filter");
 		    if(state == null){
 		    	state = "all_filter";
 		    }
+		    application.setAttribute("cat_filter", state);
 		    System.out.println("filter is " + state);
-		    String nextClicked = request.getParameter("next_clicked");
-		    if(!(nextClicked == null)){
-		    	next_clicked = true;
-		    }
-		    System.out.println("next_clicked is " + next_clicked);
-		    
-		    
-		    
 		    
 		    String sql, sql1, sql2, sql3 = "";
 		     
-		     
-		    
-		 	//r_offset and next_r_offset session variable
-		 	if(request.getParameter("row_offset") != null && request.getParameter("row_offset").equals("0") == false)
-		 	{
-		 		row_offset = String.valueOf(Integer.valueOf(request.getParameter("row_offset")));
-		 	}
-		 	else
-		 	{
-		 		row_offset = "0";
-		 	}
-		 	//System.out.println("r_offset: " + r_offset);
-		 	//System.out.println("next_r_offset: " + next_r_offset);
-		 	
-		 	//c_offset and next_c_offset session variable
-		 	if(request.getParameter("col_offset") != null && request.getParameter("col_offset").equals("0") == false)
-		 	{
-		 		col_offset = String.valueOf(Integer.valueOf(request.getParameter("col_offset")));
-		 	}
-		 	else
-		 	{
-		 		col_offset = "0";
-		 	}
-		 	
-		 	//System.out.println("c_offset: " + c_offset);
-		 	//System.out.println("next_c_offset: " + next_c_offset);
 		     
 		
        %>
@@ -108,39 +88,7 @@ double query1Time, query2Time, query3Time, query4Time;
 	</ul>
 </div>
 <div>
-
-<% 
- 	if(!next_clicked) { %>
-	    <div class="form-group">
-	  	<label for="rows">Rows</label>
-	  	<select name="rows" id="rows" class="form-control">
-	  	<% 
-	  	if(rows.equals("state")){ %>
-	 	 	<option value="customer">Customer</option>
-	  		<option value="state" selected >State</option> <%
-		}
-		else{ %>
-	 		<option value="customer" selected>Customer</option>
-	  		<option value="state" >State</option> <%
-		} %>
-				
-		</select>
-		
-		<div class="form-group">
-	  	<label for="order">Order</label>
-	  	<select name="order" id="order" class="form-control">
-	  	
-	  	  	<% 
-	  	if(order.equals("alphabetical_order")){ %>
-		    <option value="alphabetical_order" selected>Alphabetical</option>
-		    <option value="totalorder">Total k</option> <%
-		}
-		else{ %>
-		    <option value="alphabetical_order">Alphabetical</option>
-		    <option value="totalorder" selected>Total k</option> <%
-		} %>
-	
-		</select>
+	<h1 id="productHeader"></h1>
 	
 	<%
 		sql = "Select name, id from categories";
@@ -176,112 +124,98 @@ double query1Time, query2Time, query3Time, query4Time;
   </div>
   
 </form>
-<%	 } //end of if stmt for checking if next_clicked %>     
-       <table border = "2">
+   
+       <table border = "2" id = "table" >
     
        <% 
     
        
-      
+       //query for row headers - TOP - K order
        
-      //query for row headers
- 	if(rows.equals("customer") || rows.equals(null)){
- 		
- 		if(order.equals("alphabetical_order") || order.equals(null) ){
+    stmt = conn.createStatement();
+    stmt.executeUpdate("truncate table utopproducts");
+    stmt = conn.createStatement();
+    stmt.executeUpdate("truncate table topproductsorig");
+    
+    
+    
+
+ 	sql1 = "SELECT state.name, state.id, COALESCE (SUM(o.price), 0) AS amount, COUNT(*) OVER () as totalRows" + 			
+ 			" FROM (SELECT name, id FROM states ORDER BY name )" +
+ 			" AS state JOIN users u ON (state.id = u.state_id)" + 
+ 			" LEFT JOIN orders o ON (o.user_id = state.id)" + 
+ 			" GROUP BY state.name, state.id" + 
+ 			" order by COALESCE (SUM(o.price), 0)  desc"		;	
  			
- 			sql1 = "SELECT users.id, users.name, COALESCE (SUM(o.price), 0) AS amount, COUNT(*) OVER () as totalRows" + 
- 					   " FROM (SELECT name, id FROM users ORDER BY name ASC OFFSET "+row_offset+" )" +
- 					   " AS users LEFT JOIN orders o" +  
- 					   " ON (o.user_id = users.id)" + 
- 					   " GROUP BY users.id, users.name" +
- 					   " ORDER BY users.name asc LIMIT 20"		;
- 			
- 		}
- 		
- 		else{  //order by top K
- 			
- 			sql1 = "SELECT users.id, users.name, COALESCE (SUM(o.price), 0) AS amount, COUNT(*) OVER () as totalRows" + 
-					   " FROM (SELECT name, id FROM users ORDER BY name ASC OFFSET "+row_offset+" )" +
-					   " AS users LEFT JOIN orders o" +  
-					   " ON (o.user_id = users.id)" + 
-					   " GROUP BY users.id, users.name" +
-					   " order by COALESCE (SUM(o.price), 0)  desc LIMIT 20"		;		
- 		}
- 	
- 	}
- 	
- 	else{ //states for rows, not customers
- 		
- 		if(order.equals("alphabetical_order") || order.equals(null) ){
- 			System.out.println("here state query ");
- 			sql1 = "SELECT state.state, COALESCE (SUM(o.price), 0) AS amount, COUNT(*) OVER () as totalRows" + 
-					   " FROM (SELECT state, id FROM users ORDER BY state ASC OFFSET "+row_offset+")" +
-					   " AS state LEFT JOIN orders o" +  
-					   " ON (o.user_id = state.id)" + 
-					   " GROUP BY state.state" + 
-					   " order by state.state  asc LIMIT 20"		;
- 		}
- 		
- 		else{  //order by top K
- 			
- 			sql1 = "SELECT state.state, COALESCE (SUM(o.price), 0) AS amount, COUNT(*) OVER () as totalRows" + 
-					   " FROM (SELECT state, id FROM users ORDER BY state ASC OFFSET "+row_offset+")" +
-					   " AS state LEFT JOIN orders o" +  
-					   " ON (o.user_id = state.id)" + 
-					   " GROUP BY state.state" + 
-					   " order by COALESCE (SUM(o.price), 0)  desc LIMIT 20"		;	
- 			
- 		}
- 	
- 	} //end of row header query
-       
-       
-       
-    //query for product headers - alphabetical_order
-    if(order.equals("alphabetical_order") || order.equals(null) ){
+ 		  
+    		   
+    String utablesql =null;
+    String origtablesql = null;
+    //query for product headers - TOP - K order
+   if(state.equals("all_filter") || state.equals(null) ){
     	
     	
- 		if(state.equals("all_filter") || state.equals(null) ){
- 	        sql2 = "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount, COUNT(*) OVER () as totalCols" + 
- 	    			" FROM (SELECT id, name FROM products ORDER BY name ASC   OFFSET "+col_offset+ ") AS prod" +
- 	    			" LEFT JOIN orders ON (orders.product_id = prod.id)" +
- 	    			" GROUP BY prod.id, prod.name" +
- 	    			" order by prod.name asc LIMIT 10";
- 		}
- 		else{
+ 		sql2 = "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount, COUNT(*) OVER () as totalCols" + 
+ 	   			" FROM (SELECT id, name FROM products ORDER BY name ASC ) AS prod" +
+ 	   			" LEFT JOIN orders ON (orders.product_id = prod.id)" +
+ 	   			" GROUP BY prod.id, prod.name" +
+ 	   			" order by COALESCE (SUM(orders.price), 0) desc LIMIT 50";
+ 	
+ 		
+ 		origtablesql =" insert into topproductsorig (product_id, product_name, sales) SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount" + 
+ 	   			" FROM (SELECT id, name FROM products ORDER BY name ASC ) AS prod" +
+ 	   			" LEFT JOIN orders ON (orders.product_id = prod.id)" +
+ 	   			" GROUP BY prod.id, prod.name" +
+ 	   			" order by COALESCE (SUM(orders.price), 0) desc";
+ 		
+ 		
+ 		 utablesql =" insert into utopproducts (product_id, product_name, sales, refreshed)  SELECT product_id, product_name, sales, FALSE from topproductsorig";
+ 		
+   	}
+    
+ 	else{
  			
  			//filter present
- 	        sql2 = "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount, COUNT(*) OVER () as totalCols" + 
- 	    			" FROM (SELECT id, name FROM products where products.category_id = " +state+ 
- 	        		" ORDER BY name ASC OFFSET "+col_offset+ ") AS prod" +
- 	    			" LEFT JOIN orders ON (orders.product_id = prod.id)" +
- 	    			" GROUP BY prod.id, prod.name" +
- 	    			" order by prod.name asc LIMIT 10";			
- 		}   	
-    }
+ 			System.out.println("filter present");
+ 	    sql2 = "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount, COUNT(*) OVER () as totalCols" + 
+ 	   			" FROM (SELECT id, name FROM products where products.category_id = " +state+ 
+ 	       		" ORDER BY name ASC ) AS prod" +
+ 	   			" LEFT JOIN orders ON (orders.product_id = prod.id)" +
+ 	   			" GROUP BY prod.id, prod.name" +
+     			" order by COALESCE (SUM(orders.price), 0) desc LIMIT 50 ";		
+ 	   
+ 	  origtablesql = " insert into topproductsorig (product_id, product_name, sales) SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount" + 
+	   			" FROM (SELECT id, name FROM products where products.category_id = " +state+ 
+	       		" ORDER BY name ASC ) AS prod" +
+	   			" LEFT JOIN orders ON (orders.product_id = prod.id)" +
+	   			" GROUP BY prod.id, prod.name" +
+    			" order by COALESCE (SUM(orders.price), 0) desc  ";		
+	    
+ 	 utablesql =" insert into utopproducts (product_id, product_name, sales, refreshed)  SELECT product_id, product_name, sales, FALSE from topproductsorig";   
+ 	    
+ 	    
+ 	}   	
+    
+	try{
+	stmt = conn.createStatement();
+	 stmt.executeUpdate(origtablesql);
+	}
+	catch(Exception e){
+		System.out.println("here1");
+		System.out.println(e);
+	}
+
+   try{
+	stmt = conn.createStatement();
+	  stmt.executeUpdate(utablesql);
+   }
+	catch(Exception e){
+		System.out.println("here2");
+		System.out.println(e);
+	}
+
+
  	
- 	//query for product headers - top k
-    else{
-    	
-    	
- 		if(state.equals("all_filter") || state.equals(null) ){
- 	        sql2 = "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount, COUNT(*) OVER () as totalCols" + 
- 	    			" FROM (SELECT id, name FROM products ORDER BY name ASC OFFSET "+col_offset+ ") AS prod" +
- 	    			" LEFT JOIN orders ON (orders.product_id = prod.id)" +
- 	    			" GROUP BY prod.id, prod.name" +
- 	    			" order by COALESCE (SUM(orders.price), 0) desc LIMIT 10";
- 		}
- 		else{
- 			
- 			//filter present
- 	        sql2 = "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount, COUNT(*) OVER () as totalCols" + 
- 	    			" FROM (SELECT id, name FROM products where products.category_id = " +state+ 
- 	        		" ORDER BY name ASC OFFSET "+col_offset+ ") AS prod" +
- 	    			" LEFT JOIN orders ON (orders.product_id = prod.id)" +
- 	    			" GROUP BY prod.id, prod.name" +
- 	    			" order by COALESCE (SUM(orders.price), 0) desc LIMIT 10 ";			
- 		} 
-    }
 
  	/*
  	try{
@@ -322,19 +256,28 @@ double query1Time, query2Time, query3Time, query4Time;
     
     
    	   %> <tr> <td> XXXXX </td>
+
+	
    	   
  <%   	    //loop for product headers
+ List<Integer> productid = new ArrayList<Integer>();
+ List<String> productname = new ArrayList<String>();
+int headerCellNumber = 5000;
+
  	while(r2.next()){   
- 			System.out.println("Total prods from query = " + r2.getInt(4));
+ 		//	System.out.println("Total prods from query = " + r2.getInt(4));
  			totalCols = r2.getInt(4);
+ 			productid.add(r2.getInt(1));
+ 			productname.add(r2.getString(2));
+ 			Cell cell = new Cell(r2.getString(2), Float.valueOf(r2.getString(3)), headerCellNumber, 0, headerCellNumber, "", 1 );
+ 			String key = r2.getString(2);
+ 			headerTable.put(key, cell);
+ 	//		System.out.println("product id into vector = " + (r2.getInt(1)));
  			String header = r2.getString("name") + " ($" + Math.round(Float.valueOf(r2.getString("amount"))) + ")";
  			%>
  			  
- 		<td width=\"30%\" > <%=header %> </td>
- 		
- 			 
- 			   
- 	<% 	     	
+ 		<td width=\"30%\" id="<%=headerCellNumber%>"  > <%=header %> </td>   
+ 	<% 	   headerCellNumber++;  	
      }
    	%> </tr> <% //end of product headers
 
@@ -342,124 +285,46 @@ double query1Time, query2Time, query3Time, query4Time;
    	
  		   //loop through the users or states
  		   
- 	
+ 	int cellnumber = 1;
 	while(r1.next()){
     	    	//query for row data
-    	  //  	System.out.println(r1.getString(state) + " is state"); 			
-    String rowName = "";    			
-  
-    	//System.out.println("here");
-       	if(rows.equals("customer") || rows.equals(null)){
-       		rowName = r1.getString(2);
-       	    System.out.println("Total row names from query = " + r1.getInt(4)); 
-       	    totalRows = r1.getInt(4);
-
-       		if(order.equals("alphabetical_order") || order.equals(null)){
+    	  //  	System.out.println(r1.getString(state) + " is state"); 			 
+       
+       //		System.out.println("STATES");
        		
-	       		if(state.equals("all_filter") || state.equals(null) ){
-			//		System.out.println("all no filter");
-		    	    sql3 = "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount" + 
-		   					" FROM (SELECT id, name FROM products LIMIT 10 OFFSET "+col_offset+ " ) AS prod" + 
-		   					" LEFT JOIN orders ON (orders.product_id = prod.id and orders.user_id =" +Integer.toString(r1.getInt("id"))+ ")" +  
-		   					" GROUP BY prod.id, prod.name" + 
-		   					" order by prod.name asc";	
-	       		}
-	       		
-	       		else { //category filter
-			//		System.out.println("all cat filter");
-		    	    sql3 = "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount" + 
-		   					" FROM (SELECT id, name FROM products WHERE products.category_id = " +state+  " LIMIT 10 OFFSET "+col_offset+ ") AS prod" + 
-		   					" LEFT JOIN orders ON (orders.product_id = prod.id and orders.user_id =" +Integer.toString(r1.getInt("id"))+ ")" +  
-		   					" GROUP BY prod.id, prod.name" + 
-		   					" order by prod.name asc";	
-	       		}
-       		}
-       		
-       		
-       		
-       		else{  //order by top k
-       			System.out.println("before if");
-	       		if(state.equals("all_filter") || state.equals(null) ){
-	       			System.out.println("in first if");
-			//		System.out.println("top k all filter");
-		    	    sql3 = "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount" + 
-		   					" FROM (SELECT id, name FROM products LIMIT 10 OFFSET "+col_offset+ ") AS prod" + 
-		   					" LEFT JOIN orders ON (orders.product_id = prod.id and orders.user_id =" +Integer.toString(r1.getInt("id"))+ ")" +  
-		   					" GROUP BY prod.id, prod.name" + 
-		   					" order by COALESCE (SUM(orders.price), 0)  DESC ";	
-	       		}
-       		
-	       		
-	       		else { //category filter
-	       			System.out.println("in else");
-				//	System.out.println("top k cat filter");
-		    	    sql3 = "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount" + 
-		   					" FROM (SELECT id, name FROM products WHERE products.category_id = " +state+  " LIMIT 10 OFFSET "+col_offset+ ") AS prod" + 
-		   					" LEFT JOIN orders ON (orders.product_id = prod.id and orders.user_id =" +Integer.toString(r1.getInt("id"))+ ")" +  
-		   					" GROUP BY prod.id, prod.name" + 
-		   					" order by COALESCE (SUM(orders.price), 0) DESC	";	
-	       		}
-       		}  
-       			
-       	} //end of if in while
-       	 
-       	else{
-       		System.out.println("STATES");
-       		rowName = r1.getString(1);
-       	    System.out.println("Total row names from query = " + r1.getInt(3)); 
+      // 	    System.out.println("Total row names from query = " + r1.getInt(3)); 
+      		int rowID = r1.getInt(2);
        	    totalRows = r1.getInt(3);
  	    	String st = r1.getString(1); 
  	    	System.out.println(st);
+ 	    	System.out.println(rowID);
 
-       		if(order.equals("alphabetical_order") || order.equals(null)){
-          
-	       		if(state.equals("all_filter") || state.equals(null) ){
-			//		System.out.println("all no filter");
- 	    	
-		 	    	sql3 =   "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount" +
-		 					" FROM (SELECT id, name FROM products LIMIT 10 OFFSET "+col_offset+ ") AS prod " +
-		 					" LEFT JOIN orders ON (orders.product_id = prod.id " +
-		 					" and orders.user_id in (select id from users where state = '" +rowName+  "' ) )" +
-		 					" GROUP BY prod.id, prod.name " +
-		 					" order by prod.name asc" ;	
-		 	    	}
-	       		
-	       		else{
-	       			
-		 	    	sql3 =   "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount" +
-		 					" FROM (SELECT id, name FROM products WHERE products.category_id = " +state+  " LIMIT 10 OFFSET "+col_offset+ ") AS prod " +
-		 					" LEFT JOIN orders ON (orders.product_id = prod.id " +
-		 					" and orders.user_id in (select id from users where state = '" +rowName+  "' ) )" +
-		 					" GROUP BY prod.id, prod.name " +
-		 					" order by prod.name asc" ;	
-	       		}
-	       	}
        		
-       		else{
+   
                 //top K
-	       		if(state.equals("all_filter") || state.equals(null) ){
-			//		System.out.println("all no filter");
+		if(state.equals("all_filter") || state.equals(null) ){
+					System.out.println("all no filter");
  	    		//states top k no filter
-		 	    	sql3 =   "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount" +
-		 					" FROM (SELECT id, name FROM products LIMIT 10 OFFSET "+col_offset+ ") AS prod " +
-		 					" LEFT JOIN orders ON (orders.product_id = prod.id " +
-		 					" and orders.user_id in (select id from users where state = '" +rowName+  "' ) )" +
-		 					" GROUP BY prod.id, prod.name " +
-		 					" order by COALESCE (SUM(orders.price), 0)  DESC" ;	
-		 	    	}
+			sql3 =  "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount" +	
+ 	    			" FROM (SELECT id, name FROM products ) AS prod " +
+		 			" LEFT JOIN orders ON (orders.product_id = prod.id " +
+					" and orders.user_id in (select id from users where state_id = " +rowID+  " ) )" +
+		 			" GROUP BY prod.id, prod.name " +
+		 			" order by COALESCE (SUM(orders.price), 0) DESC limit 50" ;	
+		}
 	       		
-	       		else{ //states top k cat filter 
-	       			
-		 	    	sql3 =   "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount" +
-		 					" FROM (SELECT id, name FROM products WHERE products.category_id = " +state+  " LIMIT 10 OFFSET "+col_offset+ ") AS prod " +
-		 					" LEFT JOIN orders ON (orders.product_id = prod.id " +
-		 					" and orders.user_id in (select id from users where state = '" +rowName+  "' ) )" +
-		 					" GROUP BY prod.id, prod.name " +
-		 					" order by COALESCE (SUM(orders.price), 0)  DESC" ;	
-	       		}
-	       	}
+		else{ //states top k cat filter 
+			System.out.println(" filter");
+			sql3 =  "SELECT prod.id, prod.name, COALESCE (SUM(orders.price), 0) AS amount" +
+					" FROM (SELECT id, name FROM products WHERE products.category_id = " +state+  ") AS prod " +
+		 			" LEFT JOIN orders ON (orders.product_id = prod.id " +
+					" and orders.user_id in (select id from users where state_id = " +rowID+  " ) )" +
+ 					" GROUP BY prod.id, prod.name " +
+		 			" order by COALESCE (SUM(orders.price), 0) DESC limit 50 " ;	
+	    }
+	       	
 
-       	} // end of if else for row data
+     	 // end of if else for row data
        		
 
        		
@@ -483,17 +348,47 @@ double query1Time, query2Time, query3Time, query4Time;
    			System.out.println("bad result set");
    		   }
    		   
-   	//	System.out.println("befpre r3 while");
-   		String header =rowName + " \n ($" + Math.round(Float.valueOf(r1.getString("amount"))) + ")";
+
+   		String header = st + " \n ($" + Math.round(Float.valueOf(r1.getString("amount"))) + ")";
+   		
+   		Cell rowcell = new Cell("", Math.round(Float.valueOf(r1.getString("amount"))), headerCellNumber, 0, 0, st, 2 );
+		String rowkey = st;
+		headerTable.put(rowkey, rowcell);
+		
+   		
+   		
+   		
+   		
+
    		 %>
-   		<tr> <td><%= header %> </td> 
+   		<tr> <td id="<%=headerCellNumber%>"  ><%= header %> </td> 
    		<% 
+   		headerCellNumber++;
    		//loop for row data
+   		int column = 1;
+   		int productIndex = 0;
 			while(r3.next()){
-    		//	System.out.println("in r3 while");  %>
-    	   		<td width=\"30%\" >  <%= r3.getInt("amount") %> </td> 
-    	    	   
-   <%		} //end of nested while
+				String key = st + "_" + productid.get(productIndex);
+				System.out.println("cell key is " + key);
+				
+				//set row as productIndex just for right now, dont want to update cell.class
+				Cell cell = new Cell(productname.get(productIndex), r3.getInt("amount"), cellnumber, productid.get(productIndex), column, st, 3 );
+						
+				
+				cellTable.put(key, cell);
+				
+    			//System.out.println("just added + " + productid.get(productIndex) );  
+    			productIndex++;													%>
+    	   		<td id="<%=cellnumber%>"   width=\"30%\" >  <%= r3.getInt("amount") %> </td> 
+    	   		
+    	    <%	column++;
+				cellnumber++;
+    	    }
+			productIndex = 0;
+			 application.setAttribute("cellTable", cellTable);
+			 application.setAttribute("headerTable", headerTable);
+			
+			 //end of nested while
    			%> </tr>  <% 
    		
    		
@@ -502,65 +397,11 @@ double query1Time, query2Time, query3Time, query4Time;
   	    
 
 
-   	if(Integer.valueOf(row_offset)+20 < totalRows){ 		
-     %>     
-     <tr><td colspan="1">
-     <% 
-		int row_offset_updated = Integer.valueOf(row_offset) + 20;
-     %>
-	   	<form action="salesAnalytics.jsp" method="POST">
-			<div class="form-group">
-				<input type ="hidden" name=rows value="<%=rows%>">
-				<input type ="hidden" name=filter value="<%=state%>">
-				<input type ="hidden" name=order value="<%=order%>">
-				<input type ="hidden" name=row_offset value="<%=row_offset_updated%>">
-				<input type ="hidden" name=col_offset value="<%=col_offset%>">
-				<input type ="hidden" name=next_clicked value="next_clicked">
-
-			</div> <% 
-			if(rows.equals("state")){ %>
-				<button type="submit" class="btn btn-primary">Next 20 states</button> <%
-			}
-			else{ %>
-				<button type="submit" class="btn btn-primary">Next 20 customers</button> <%
-			}
-			
-			%>
-			
-		</form>
-		</td>
-		<td colspan="20">
-		</td></tr>
-<% 
-   	}
-
-   	if(Integer.valueOf(col_offset)+10 < totalCols){  
- %>
-   
-          <tr><td colspan="1">
-     <% 
-		int col_offset_updated = Integer.valueOf(col_offset) + 10;
-     %>
-	   	<form action="salesAnalytics.jsp" method="POST">
-			<div class="form-group">
-				<input type ="hidden" name=rows value="<%=rows%>">
-				<input type ="hidden" name=filter value="<%=state%>">
-				<input type ="hidden" name=order value="<%=order%>">
-				<input type ="hidden" name=row_offset value="<%=row_offset%>">
-				<input type ="hidden" name=col_offset value="<%=col_offset_updated%>">
-				<input type ="hidden" name=next_clicked value="next_clicked">
-
-			</div>
-			<button type="submit" class="btn btn-primary">Next 10 Products</button>
-		</form>
-		</td>
-		<td colspan="20">
-		</td></tr>
+	 %>
      
-     <% } %>
-     
-     
+     <tr><input onClick="updateCellValue(); return false;" type="button" value="Refresh"/></tr>
      </table>
+     <button type="button" onClick="updateCellValue(); return false;" >Refresh</button>
      <% 
     	 
 
@@ -569,8 +410,16 @@ double query1Time, query2Time, query3Time, query4Time;
 	 catch (Exception e) {
 		 System.out.println(e);
 	 } 
-       
+	
+	
+	
+	//Cell c = cellTable.get("FL_5");
+	
 
+		// System.out.println(  c.getOrigVal()   );
+	//	 System.out.println(  c.getCellId() );
+		
+	
   //     stmt.close();
     //   conn.close();
 		
@@ -578,6 +427,9 @@ double query1Time, query2Time, query3Time, query4Time;
 
 %>
 
+
+	
+	
 
 
 </body>

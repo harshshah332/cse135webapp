@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import psycopg2
 import sys
 import os
@@ -27,25 +26,20 @@ def RanRoleGen():
     role = ['o', 'c']
     return random.choice(role)
 
-def RanStateGen():
-    state = ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DC", "DE", "FL", "GA", 
-      "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", 
-      "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", 
-      "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", 
-      "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"]
-    return random.choice(state)
-
 def main(argv):
     dbName = "cse135"
-    userName = postgres
+    userName = "moojin"
 
     tableNames = []
     columnNames = []
 
+    tableNames.append("states")
+    columnNames.append([["id","serial PRIMARY KEY"],["name","char(2) NOT NULL UNIQUE"]])
+
     tableNames.append("users")
     columnNames.append([["id","serial PRIMARY KEY"],["name","text NOT NULL UNIQUE"],
                        ["role","char(1) NOT NULL"],["age","integer NOT NULL"],
-                       ["state","char(2) NOT NULL"]])
+                       ["state_id","integer NOT NULL"]])
     userNum = int(argv[1])
 
     tableNames.append("categories")
@@ -71,20 +65,33 @@ def main(argv):
     conn = psycopg2.connect("dbname=%s user=%s" % (dbName, userName))
     cur = conn.cursor()
 
+    for tableName in reversed(tableNames):
+        cur.execute("DROP TABLE IF EXISTS %s;" % tableName)
+
+
+    state = ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", 
+      "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", 
+      "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", 
+      "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", 
+      "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"]
+
     pPriceList = []
     pPriceList.append(-1.0) #dummy
     def ColumnGenerate(i):
         seq = ''
         if i == 0:
+            for a in range(len(state)):
+                seq += "%s\n" % (state[a])
+        elif i == 1:
             uNameUniqueList = []
             for a in range(userNum):
                 uName = RanStringGen(10,string.ascii_letters,True,uNameUniqueList)
                 uNameUniqueList.append(uName)
-                seq += "%s,%s,%d,%s\n" % (uName,RanRoleGen(),RanIntegerGen(5,100),RanStateGen())
-        elif i == 1:
+                seq += "%s,%s,%d,%d\n" % (uName,RanRoleGen(),RanIntegerGen(5,100),RanIntegerGen(1,50))
+        elif i == 2:
             for a in range(categoryNum):
                 seq += "%s,%s\n" % (RanStringGen(6),RanStringGen(50))
-        elif i == 2:
+        elif i == 3:
             pSKUUniqueList = []
             for a in range(productNum):
                 pSKU = RanStringGen(10,string.ascii_letters+string.digits,True,pSKUUniqueList)
@@ -92,7 +99,7 @@ def main(argv):
                 pPrice = RanFloatGen(1,100)
                 pPriceList.append(pPrice)
                 seq += "%s,%s,%d,%.2f,%d\n" % (RanStringGen(10),pSKU,RanIntegerGen(1,categoryNum),pPrice,False)
-        elif i == 3:
+        elif i == 4:
             for a in range(saleNum):
                 uId = RanIntegerGen(1,userNum)
                 pId = RanIntegerGen(1,productNum)
@@ -100,9 +107,6 @@ def main(argv):
                 sPrice = sQul * pPriceList[pId]
                 seq += "%d,%d,%d,%.2f,%d\n" % (uId,pId,sQul,sPrice,False)
         return seq
-
-    for tableName in reversed(tableNames):
-        cur.execute("DROP TABLE IF EXISTS %s;" % tableName)
 
     for i in range(len(tableNames)):
         column = ''
@@ -116,8 +120,6 @@ def main(argv):
                 if j+1 != len(columnNames[i]):
                     column += ", "
 
-        cur.execute("CREATE TABLE %s (%s);" %(tableNames[i], columnWithType))
-        print "[%s] table is created." % (tableNames[i])
         start = time.time()
         try:
             file = open(fileNames[i], 'w')
@@ -129,6 +131,13 @@ def main(argv):
             sys.exit(0)
         end = time.time()
         print "It took %.2f sec for creating %s files" % (end-start,tableNames[i])
+
+
+        cur.execute("CREATE TABLE %s (%s);" %(tableNames[i], columnWithType))
+        print "[%s] table is created." % (tableNames[i])
+        start = time.time()
+        end = time.time()
+        print "It took %.2f sec for creating %s files" % (end-start,tableNames[i])
         start = time.time()
         cur.execute("COPY %s(%s) FROM '%s' DELIMITER ',' CSV;" %(tableNames[i],column,currPath+fileNames[i]))
         end = time.time()
@@ -137,6 +146,7 @@ def main(argv):
         print "%s records are inserted into [%s]" % (str(cur.fetchone()[0]),tableNames[i])
 
     start = time.time()
+    cur.execute("ALTER TABLE Users ADD FOREIGN KEY (state_id) REFERENCES States(id);")
     cur.execute("ALTER TABLE Products ADD FOREIGN KEY (category_id) REFERENCES Categories(id);")
     cur.execute("ALTER TABLE Orders ADD FOREIGN KEY (user_id) REFERENCES Users(id);")
     cur.execute("ALTER TABLE Orders ADD FOREIGN KEY (product_id) REFERENCES Products(id);")
